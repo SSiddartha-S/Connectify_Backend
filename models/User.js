@@ -5,20 +5,20 @@
     {
         firstName: {
             type: String,
-            require: true,
+            required: true,
             min:3,
             max:30,
         },
         lastName: {
             type: String,
-            require: true,
+            required: true,
             min:3,
             max:30,
         }, 
         email: {
             type: String,
-            require: true,
-            max:40,
+            required: true,
+            max:50,
             unique: true,
         }, 
         password: {
@@ -29,7 +29,7 @@
         }, 
         picture: {
             type: String,
-            default:" "
+            default:""
 
         }, 
         friends: {

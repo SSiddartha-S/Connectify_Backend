@@ -1,83 +1,79 @@
 import User from "../models/User.js";
 
 
-export const getUser = async(req,res) => {
-    //  getUser to retrive user by id
-    try {
-        const {id } = req.params;
-        // it requests id parameters ti find a user in User model
-        const user = await User.findById(id);
-        // if user is found it returns response 200
-        res.status(200).json(user);
+//   READ 
 
-    } catch(err) {
-        res.start(404).json({message: err.message});
-    }
-}
 
-export const getUserFriends = async(req,res) => {
-    // it used to retrieve users friends  id
-   try {
-    const {id } = req.params;
-    const user = await User.findById(id);
+export const getUser = async (req, res) => {
+  try {
+    const { id } = req.params; // Extract user ID from request parameters
+    const user = await User.findById(id); // Find the user by ID
+    res.status(200).json(user); // Return user data with 200 status
+  } catch (err) {
+    res.status(404).json({ message: err.message }); // Handle errors by returning 404 status
+  }
+};
 
+
+export const getUserFriends = async (req, res) => {
+  try {
+    const { id } = req.params; // Extract user ID from request parameters
+    const user = await User.findById(id); // Find the user by ID
+
+    // Fetch all friends based on their IDs stored in the user document
     const friends = await Promise.all(
-        //  here promise helps to give all user friends 
-        user.friends.map((id) => User.findById(id))
-        
+      user.friends.map((friendId) => User.findById(friendId))
+    );
+
+    // Format the friends' data to include only necessary fields
+    const formattedFriends = friends.map(
+      ({ _id, firstName, lastName, occupation, location, picturePath }) => {
+        return { _id, firstName, lastName, occupation, location, picturePath };
+      }
+    );
+
+    res.status(200).json(formattedFriends); // Return formatted friends data with 200 status
+  } catch (err) {
+    res.status(404).json({ message: err.message }); // Handle errors by returning 404 status
+  }
+};
+
+
+//   UPDATE 
+
+export const addRemoveFriend = async (req, res) => {
+  try {
+    const { id, friendId } = req.params; // Extract user ID and friend ID from request parameters
+    const user = await User.findById(id); // Find the user by ID
+    const friend = await User.findById(friendId); // Find the friend by friend ID
+
+    // Check if the friend is already in the user's friends list
+    if (user.friends.includes(friendId)) {
+      // If they are friends, remove them from the friends list
+      user.friends = user.friends.filter((fid) => fid !== friendId);
+      friend.friends = friend.friends.filter((fid) => fid !== id);
+    } else {
+      // If they are not friends, add them to the friends list
+      user.friends.push(friendId);
+      friend.friends.push(id);
+    }
+    
+    // Save the updated user and friend documents to the database
+    await user.save();
+    await friend.save();
+
+    // Fetch and format the updated friends list
+    const friends = await Promise.all(
+      user.friends.map((fid) => User.findById(fid))
     );
     const formattedFriends = friends.map(
-        //  here formattedFriends are the list of friends with
-        //  some specific fields from friends
-        ({ _id, firstName, lastName, occupation, location, picturePath }) =>{
-            return{ _id, firstName, lastName, occupation, location,picturePath};
-        }
-        );
-        res.status(200).json(formattedFriends);
-    
-   } catch  (err){
-    res.start(404).json({message:err.message});
-   }
+      ({ _id, firstName, lastName, occupation, location, picturePath }) => {
+        return { _id, firstName, lastName, occupation, location, picturePath };
+      }
+    );
 
-}
-
-
-export const addRemoveFriend = async(req,res) => {
-    try {
-        const { id , friendId }  = req.params;
-        //  here id and friend id are req
-        const user = await User.findById(id);
-        //  finding users
-        const friend = await User.findById(friendId);
-        //  finding friends id
-        if (user.friends.includes(friendId)) {
-            user.friends = user.friends.filter((id) => id !== friendId);
-            //  this one gives all ids which are not friendids in new array, it removes the ids if == friendid from new array
-           
-
-        }
-        else {
-             user.friends.push(friendId);
-            //  it adds friendid to user friends array
-            friend.friends.push(id);
-            //  this adds user id to friends friend array
-        }
-        await user.save();
-        // here updated info is saved to database
-        await friend.save();
-
-        const friends = await Promise.all(
-            user.friends.map((id) => User.findById(id))
-        );
-        const formattedFriends = friends.map(
-            ({ _id, firstName, lastName, occupation, location, picturePath }) =>{
-                return{ _id, firstName, lastName, occupation, location,picturePath};
-            }
-            );
-            res.status(200).json(formattedFriends);
-
-    } catch  (err){
-        res.start(404).json({message:err.message});
-       }
-    
-}
+    res.status(200).json(formattedFriends); // Return updated friends list with 200 status
+  } catch (err) {
+    res.status(404).json({ message: err.message }); // Handle errors by returning 404 status
+  }
+};
