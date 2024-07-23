@@ -1,53 +1,61 @@
- import mongoose from "mongoose";
+import mongoose from "mongoose";
 
- // craeting structure of user details in mongodb 
- const UserSchema = new mongoose.Schema(
-    {
-        firstName: {
-            type: String,
-            required: true,
-            min:3,
-            max:30,
-        },
-        lastName: {
-            type: String,
-            required: true,
-            min:3,
-            max:30,
-        }, 
-        email: {
-            type: String,
-            required: true,
-            max:50,
-            unique: true,
-        }, 
-        password: {
-            type: String,
-            require: true,
-            min:6,
-            
-        }, 
-        picture: {
-            type: String,
-            default:""
-
-        }, 
-        friends: {
-            type: Array,
-            default:[]
-        },
-
-        location: String,
-        occupation: String,
-        viewedProfile: Number,
-        impressions: Number,
-
+// Creating structure of user details in MongoDB
+const UserSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      minlength: 3,
+      maxlength: 30,
     },
-    {timestamps: true }
-    // timestamp gives the fields od createdat and updatedat
- );
+    lastName: {
+      type: String,
+      required: true,
+      minlength: 3,
+      maxlength: 30,
+    },
+    email: {
+      type: String,
+      required: true,
+      maxlength: 50,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+    picturePath: {
+      type: String,
+      default: "",
+    },
+    friends: {
+      type: Array,
+      default: [],
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    occupation: {
+      type: String,
+      default: "",
+    },
+    viewedProfile: {
+      type: Number,
+      default: 0,
+    },
+    impressions: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true } // Timestamps give the fields createdAt and updatedAt
+);
 
- const User = mongoose.model("User",UserSchema)
- //hereu we can create User based on the data give up in UserSchema
+const User = mongoose.model("User", UserSchema);
+// Here we create the User model based on the data given in UserSchema
+
 export default User;
-//by eporting we can use it in other parts of application
+// By exporting, we can use this model in other parts of the application

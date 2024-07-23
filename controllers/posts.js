@@ -1,11 +1,40 @@
+import multer from 'multer';
+import path from 'path';
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import { validationResult } from 'express-validator';
+import dotenv from 'dotenv';
 
-/* CREATE */
+dotenv.config();
+
+// Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/assets'); // Ensure this matches your static folder
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  }
+});
+
+const upload = multer({ storage });
+
+// Create Post with file upload handling
 export const createPost = async (req, res) => {
   try {
-    const { userId, description, picturePath } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, description } = req.body;
+    const picturePath = req.file ? req.file.path.replace('public/', '') : null; // Adjust path
+
     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     const newPost = new Post({
       userId,
       firstName: user.firstName,
@@ -17,41 +46,51 @@ export const createPost = async (req, res) => {
       likes: {},
       comments: [],
     });
-    await newPost.save();
 
-    const post = await Post.find();
-    res.status(201).json(post);
+    const savedPost = await newPost.save();
+
+    res.status(201).json(savedPost);
   } catch (err) {
-    res.status(409).json({ message: err.message });
+    console.error("Error creating post:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-/* READ */
+// Export upload middleware
+export { upload };
+
+// Other controllers
 export const getFeedPosts = async (req, res) => {
   try {
-    const post = await Post.find();
-    res.status(200).json(post);
+    const posts = await Post.find();
+    res.status(200).json(posts);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    console.error("Error fetching feed posts:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-export const getUserPosts = async (req, res) => {
+export const getUserPosts = async (req, res) => { 
   try {
     const { userId } = req.params;
-    const post = await Post.find({ userId });
-    res.status(200).json(post);
+    const posts = await Post.find({ userId });
+    res.status(200).json(posts);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    console.error("Error fetching user posts:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-/* UPDATE */
-export const likePost = async (req, res) => {
+export const likePost = async (req, res) => { 
   try {
     const { id } = req.params;
     const { userId } = req.body;
+
     const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
     const isLiked = post.likes.get(userId);
 
     if (isLiked) {
@@ -68,6 +107,7 @@ export const likePost = async (req, res) => {
 
     res.status(200).json(updatedPost);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    console.error("Error liking post:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

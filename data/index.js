@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// sample data
 const userIds = [
   new mongoose.Types.ObjectId(),
   new mongoose.Types.ObjectId(),
