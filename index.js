@@ -66,9 +66,9 @@ mongoose
   .connect(process.env.MONGO_URL) // Removed deprecated options
   .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`)); // Start server and log the port
-    // Uncomment these if you want to seed your database
-    // User.insertMany(users); // Insert sample users
-    // Post.insertMany(posts); // Insert sample posts
+    // Uncomment these if you want to see your database
+     //User.insertMany(users); // Insert sample users
+     // Post.insertMany(posts); // Insert sample posts
   })
   .catch((error) => console.log(`${error} did not connect`)); // Log connection errors
 

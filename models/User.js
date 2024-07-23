@@ -1,37 +1,38 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import validator from 'validator';
 
-// Creating structure of user details in MongoDB
 const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
-      minlength: 3,
-      maxlength: 30,
+      required: [true, 'First name is required'],
+      minlength: [3, 'First name must be at least 3 characters long'],
+      maxlength: [30, 'First name cannot exceed 30 characters'],
     },
     lastName: {
       type: String,
-      required: true,
-      minlength: 3,
-      maxlength: 30,
+      required: [true, 'Last name is required'],
+      minlength: [3, 'Last name must be at least 3 characters long'],
+      maxlength: [30, 'Last name cannot exceed 30 characters'],
     },
     email: {
       type: String,
-      required: true,
-      maxlength: 50,
+      required: [true, 'Email is required'],
+      maxlength: [50, 'Email cannot exceed 50 characters'],
       unique: true,
+      validate: [validator.isEmail, 'Invalid email format'],
     },
     password: {
       type: String,
-      required: true,
-      minlength: 6,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters long'],
     },
     picturePath: {
       type: String,
       default: "",
     },
     friends: {
-      type: Array,
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
       default: [],
     },
     location: {
@@ -50,12 +51,21 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    twitterHandle: {
+      type: String,
+      default: "",
+    },
+    linkedinHandle: {
+      type: String,
+      default: "",
+    },
   },
-  { timestamps: true } // Timestamps give the fields createdAt and updatedAt
+  { timestamps: true }
 );
 
-const User = mongoose.model("User", UserSchema);
-// Here we create the User model based on the data given in UserSchema
+// Index on email for faster lookups
+UserSchema.index({ email: 1 });
+
+const User = mongoose.model('User', UserSchema);
 
 export default User;
-// By exporting, we can use this model in other parts of the application

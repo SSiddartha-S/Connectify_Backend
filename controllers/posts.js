@@ -10,10 +10,10 @@ dotenv.config();
 // Configure multer for file storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/assets'); // Ensure this matches your static folder
+    cb(null, 'public/assets'); 
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    cb(null, Date.now() + path.extname(file.originalname)); 
   }
 });
 
@@ -28,7 +28,7 @@ export const createPost = async (req, res) => {
     }
 
     const { userId, description } = req.body;
-    const picturePath = req.file ? req.file.path.replace('public/', '') : null; // Adjust path
+    const picturePath = req.file ? req.file.filename : null; 
 
     const user = await User.findById(userId);
     if (!user) {
